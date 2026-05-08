@@ -1,4 +1,4 @@
-package com.example.rest_api_build.model;
+package com.example.rest_api_build.entity;
 
 import jakarta.persistence.*;
 
@@ -23,6 +23,14 @@ public class User {
 
     // Default constructor
     public User() {}
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     // Getters & Setters
     public Long getId() { return id; }

@@ -4,7 +4,7 @@ import com.example.rest_api_build.dto.UserRequestDTO;
 import com.example.rest_api_build.dto.UserResponseDTO;
 import com.example.rest_api_build.exception.UserNotFoundException;
 import com.example.rest_api_build.mapper.UserMapper;
-import com.example.rest_api_build.model.User;
+import com.example.rest_api_build.entity.User;
 import com.example.rest_api_build.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
