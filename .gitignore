@@ -1,5 +1,18 @@
+# IntelliJ
 .idea/
 *.iml
+**/.idea/
+
+# Python
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# Spring Boot
+**/target/
+
+# Environment
+.env
 
 # OS
 .DS_Store
