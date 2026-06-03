@@ -3,11 +3,21 @@ package com.example.rest_api_build.controller;
 import com.example.rest_api_build.dto.FileResponseDTO;
 import com.example.rest_api_build.entity.FileDocument;
 import com.example.rest_api_build.entity.User;
+
+import com.example.rest_api_build.exception.FileNotFoundException;
+import com.example.rest_api_build.exception.UserNotFoundException;
+
 import com.example.rest_api_build.repository.UserRepository;
 import com.example.rest_api_build.service.FileService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
+import org.springframework.data.domain.Page;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.core.Authentication;
@@ -16,11 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,7 +50,10 @@ public class FileController {
 
         User user = userRepository
                 .findByEmail(email)
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found"
+                        ));
 
         FileDocument savedFile =
                 fileService.uploadFile(file, user);
@@ -65,7 +73,20 @@ public class FileController {
     }
 
     @GetMapping("/my-files")
-    public ResponseEntity<List<FileResponseDTO>> getMyFiles(
+    public ResponseEntity<Page<FileResponseDTO>> getMyFiles(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "5")
+            int size,
+
+            @RequestParam(defaultValue = "uploadedAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "desc")
+            String sortDirection,
+
             Authentication authentication
     ) {
 
@@ -74,10 +95,18 @@ public class FileController {
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserNotFoundException(
+                                "User not found"
+                        ));
 
-        List<FileResponseDTO> files =
-                fileService.getUserFiles(user);
+        Page<FileResponseDTO> files =
+                fileService.getUserFiles(
+                        user,
+                        page,
+                        size,
+                        sortBy,
+                        sortDirection
+                );
 
         return ResponseEntity.ok(files);
     }
@@ -93,17 +122,24 @@ public class FileController {
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserNotFoundException(
+                                "User not found"
+                        ));
 
         FileDocument fileDocument =
                 fileService.getFileByIdAndUser(id, user);
 
-        Path path = Paths.get(fileDocument.getFilePath());
+        Path path =
+                Paths.get(fileDocument.getFilePath());
 
-        Resource resource = new UrlResource(path.toUri());
+        Resource resource =
+                new UrlResource(path.toUri());
 
         if (!resource.exists()) {
-            throw new RuntimeException("File not found");
+
+            throw new FileNotFoundException(
+                    "File not found"
+            );
         }
 
         return ResponseEntity.ok()
@@ -126,16 +162,34 @@ public class FileController {
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserNotFoundException(
+                                "User not found"
+                        ));
 
         fileService.deleteFile(id, user);
 
-        return ResponseEntity.ok("File deleted successfully");
+        return ResponseEntity.ok(
+                "File deleted successfully"
+        );
     }
 
     @GetMapping("/search-files")
-    public ResponseEntity<List<FileResponseDTO>> searchFiles(
+    public ResponseEntity<Page<FileResponseDTO>> searchFiles(
+
             @RequestParam String keyword,
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "5")
+            int size,
+
+            @RequestParam(defaultValue = "uploadedAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "desc")
+            String sortDirection,
+
             Authentication authentication
     ) {
 
@@ -144,12 +198,20 @@ public class FileController {
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserNotFoundException(
+                                "User not found"
+                        ));
 
-        List<FileResponseDTO> files =
-                fileService.searchFiles(keyword, user);
+        Page<FileResponseDTO> files =
+                fileService.searchFiles(
+                        keyword,
+                        user,
+                        page,
+                        size,
+                        sortBy,
+                        sortDirection
+                );
 
         return ResponseEntity.ok(files);
     }
-
 }
