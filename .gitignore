@@ -17,3 +17,10 @@
 # OS
 .DS_Store
 Thumbs.db
+backup_git_migration
+
+# Uploaded files
+rest-api-build/storage/
+
+# Backup
+backup_git_migration/
